@@ -44,7 +44,7 @@ const getOrderDetails = async (orderId) => {
   if (!order) return null;
   
   const { rows: items } = await db.query(
-    'SELECT oi.*, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE order_id = $1',
+    'SELECT oi.*, p.name, p.image_url FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = $1',
     [orderId]
   );
   

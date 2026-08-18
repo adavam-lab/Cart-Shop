@@ -12,7 +12,7 @@ const findById = async (id) => {
 
 const create = async (name, description, price, stock, imageUrl) => {
   const { rows } = await db.query(
-    'INSERT INTO products (name, description, price, stock, image_url) VALUES (, , , , ) RETURNING *',
+    'INSERT INTO products (name, description, price, stock, image_url) VALUES ($1, $2, $3, $4, $5) RETURNING *',
     [name, description, price, stock, imageUrl]
   );
   return rows[0];

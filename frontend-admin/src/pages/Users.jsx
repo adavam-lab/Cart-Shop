@@ -1,154 +1,189 @@
-import React, { useState } from 'react';
-import { Table, Button, Modal, Label, TextInput, Select } from 'flowbite-react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { fetchWithAuth } from '../services/api';
 
 export default function Users() {
-  const [users, setUsers] = useState([
-    { id: 1, name: 'Daniel Valencia', email: 'daniel@example.com', role: 'Admin', status: 'Active' },
-    { id: 2, name: 'Ana Gomez', email: 'ana@example.com', role: 'User', status: 'Active' },
-    { id: 3, name: 'Luis Martinez', email: 'luis@example.com', role: 'Editor', status: 'Inactive' },
-  ]);
-
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const [userToDelete, setUserToDelete] = useState(null);
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'customer' });
+  const [saving, setSaving] = useState(false);
 
-  const [formData, setFormData] = useState({ name: '', email: '', role: 'User', status: 'Active' });
+  const fetchUsers = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await fetchWithAuth('/users');
+      setUsers(data);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchUsers(); }, []);
 
   const handleOpenModal = (user = null) => {
-    if (user) {
-      setCurrentUser(user);
-      setFormData(user);
-    } else {
-      setCurrentUser(null);
-      setFormData({ name: '', email: '', role: 'User', status: 'Active' });
-    }
+    setCurrentUser(user);
+    setFormData(user
+      ? { name: user.name, email: user.email, password: '', role: user.role || 'customer' }
+      : { name: '', email: '', password: '', role: 'customer' }
+    );
     setIsModalOpen(true);
   };
 
-  const handleSave = () => {
-    if (currentUser) {
-      setUsers(users.map(u => u.id === currentUser.id ? { ...formData, id: currentUser.id } : u));
-    } else {
-      setUsers([...users, { ...formData, id: Date.now() }]);
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      if (currentUser) {
+        const updated = await fetchWithAuth(`/users/${currentUser.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ name: formData.name, email: formData.email, role: formData.role }),
+        });
+        setUsers(users.map(u => u.id === currentUser.id ? { ...u, ...updated } : u));
+      } else {
+        const created = await fetchWithAuth('/users', {
+          method: 'POST',
+          body: JSON.stringify(formData),
+        });
+        setUsers([...users, created]);
+      }
+      setIsModalOpen(false);
+    } catch (e) {
+      alert('Error: ' + e.message);
+    } finally {
+      setSaving(false);
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = () => {
-    setUsers(users.filter(u => u.id !== userToDelete.id));
-    setIsDeleteModalOpen(false);
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Eliminar este usuario?')) return;
+    try {
+      await fetchWithAuth(`/users/${id}`, { method: 'DELETE' });
+      setUsers(users.filter(u => u.id !== id));
+    } catch (e) {
+      alert('Error: ' + e.message);
+    }
   };
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gestión de Usuarios</h1>
-        <Button color="blue" onClick={() => handleOpenModal()}>
-          <Plus className="mr-2 h-5 w-5" />
-          Nuevo Usuario
-        </Button>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table hoverable>
-            <Table.Head>
-              <Table.HeadCell>Nombre</Table.HeadCell>
-              <Table.HeadCell>Email</Table.HeadCell>
-              <Table.HeadCell>Rol</Table.HeadCell>
-              <Table.HeadCell>Estado</Table.HeadCell>
-              <Table.HeadCell>
-                <span className="sr-only">Acciones</span>
-              </Table.HeadCell>
-            </Table.Head>
-            <Table.Body className="divide-y">
-              {users.map((user) => (
-                <Table.Row key={user.id} className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                  <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                    {user.name}
-                  </Table.Cell>
-                  <Table.Cell>{user.email}</Table.Cell>
-                  <Table.Cell>{user.role}</Table.Cell>
-                  <Table.Cell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'}`}>
-                      {user.status}
-                    </span>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <div className="flex gap-3">
-                      <button onClick={() => handleOpenModal(user)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                        <Edit2 size={18} />
-                      </button>
-                      <button onClick={() => { setUserToDelete(user); setIsDeleteModalOpen(true); }} className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Usuarios</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{users.length} registros en total</p>
         </div>
+        <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm">
+          <Plus size={16} /> Nuevo Usuario
+        </button>
       </div>
 
-      {/* Modal Crear/Editar */}
-      <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <Modal.Header>{currentUser ? 'Editar Usuario' : 'Crear Usuario'}</Modal.Header>
-        <Modal.Body>
-          <div className="space-y-4">
-            <div>
-              <div className="mb-2 block"><Label htmlFor="name" value="Nombre Completo" /></div>
-              <TextInput id="name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
-            </div>
-            <div>
-              <div className="mb-2 block"><Label htmlFor="email" value="Correo Electrónico" /></div>
-              <TextInput id="email" type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} required />
-            </div>
-            <div>
-              <div className="mb-2 block"><Label htmlFor="role" value="Rol" /></div>
-              <Select id="role" value={formData.role} onChange={(e) => setFormData({...formData, role: e.target.value})} required>
-                <option>Admin</option>
-                <option>Editor</option>
-                <option>User</option>
-              </Select>
-            </div>
-            <div>
-              <div className="mb-2 block"><Label htmlFor="status" value="Estado" /></div>
-              <Select id="status" value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})} required>
-                <option value="Active">Activo</option>
-                <option value="Inactive">Inactivo</option>
-              </Select>
-            </div>
+      {loading ? (
+        <div className="flex justify-center items-center h-48">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
+        </div>
+      ) : error ? (
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
+          {error} — <button onClick={fetchUsers} className="underline">Reintentar</button>
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
+              <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 text-xs uppercase">
+                <tr>
+                  <th className="px-6 py-3">ID</th>
+                  <th className="px-6 py-3">Nombre</th>
+                  <th className="px-6 py-3">Email</th>
+                  <th className="px-6 py-3">Rol</th>
+                  <th className="px-6 py-3">Creado</th>
+                  <th className="px-6 py-3 text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {users.length === 0 ? (
+                  <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-400">No hay usuarios registrados</td></tr>
+                ) : users.map(user => (
+                  <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition">
+                    <td className="px-6 py-4 font-mono text-xs text-gray-400">#{user.id}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                          {user.name?.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="font-medium text-gray-900 dark:text-white">{user.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">{user.email}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'}`}>
+                        {user.role || 'cliente'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">{new Date(user.created_at).toLocaleDateString('es-EC')}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex justify-center gap-3">
+                        <button onClick={() => handleOpenModal(user)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400" title="Editar"><Edit2 size={16} /></button>
+                        <button onClick={() => handleDelete(user.id)} className="text-red-600 hover:text-red-800 dark:text-red-400" title="Eliminar"><Trash2 size={16} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button color="blue" onClick={handleSave}>Guardar</Button>
-          <Button color="gray" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-        </Modal.Footer>
-      </Modal>
+        </div>
+      )}
 
-      {/* Modal Eliminar */}
-      <Modal show={isDeleteModalOpen} size="md" popup onClose={() => setIsDeleteModalOpen(false)}>
-        <Modal.Header />
-        <Modal.Body>
-          <div className="text-center">
-            <Trash2 className="mx-auto mb-4 h-14 w-14 text-red-500 dark:text-red-400" />
-            <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-              ¿Estás seguro que deseas eliminar este usuario?
-            </h3>
-            <div className="flex justify-center gap-4">
-              <Button color="failure" onClick={handleDelete}>
-                Sí, estoy seguro
-              </Button>
-              <Button color="gray" onClick={() => setIsDeleteModalOpen(false)}>
-                No, cancelar
-              </Button>
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">{currentUser ? 'Editar Usuario' : 'Nuevo Usuario'}</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
             </div>
+            <form onSubmit={handleSave} className="px-6 py-5 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre *</label>
+                <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email *</label>
+                <input type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" />
+              </div>
+              {!currentUser && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contraseña *</label>
+                  <input type="password" required={!currentUser} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" />
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rol *</label>
+                <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                  <option value="customer">Cliente</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition">Cancelar</button>
+                <button type="submit" disabled={saving} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50">
+                  {saving ? 'Guardando...' : currentUser ? 'Guardar Cambios' : 'Crear Usuario'}
+                </button>
+              </div>
+            </form>
           </div>
-        </Modal.Body>
-      </Modal>
+        </div>
+      )}
     </div>
   );
 }

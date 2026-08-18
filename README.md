@@ -15,7 +15,7 @@ Navigate to the respective directory and install the dependencies:
 
 ```bash
 # Example for a frontend project
-cd frontend-admin
+cd Profermaco Admin
 npm install
 
 # Example for the backend API

@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,7 +32,7 @@ export default function LoginPage() {
           method: 'POST',
           body: JSON.stringify({ name, email, password }),
         });
-        
+
         // Auto-login after successful registration
         const loginData = await fetchWithAuth('/auth/login', {
           method: 'POST',
@@ -51,10 +51,13 @@ export default function LoginPage() {
     <div className="flex justify-center mt-10">
       <div className="w-full max-w-md bg-[#1a1f2e] border border-gray-800 rounded-2xl shadow-2xl overflow-hidden">
         <div className="p-8 sm:p-10">
+          <div className="flex justify-center mb-6">
+            <img src="/profermaco-white.avif" alt="Profermaco Logo" className="h-16 w-auto object-contain" />
+          </div>
           <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-6">
             {isLogin ? 'Inicia Sesión en tu Cuenta' : 'Crea una Cuenta'}
           </h2>
-          
+
           {error && (
             <div className={`p-4 mb-4 text-sm rounded-lg ${error.includes('exitosa') ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
               {error}
@@ -64,45 +67,45 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {!isLogin && (
               <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-gray-300">Nombre Completo</label>
-              <input 
-                type="text" 
-                required 
-                value={name} 
-                onChange={e => setName(e.target.value)} 
-                className="w-full px-4 py-3 rounded-xl bg-gray-800/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Tu nombre"
-              />
-            </div>
+                <label className="text-sm font-semibold text-gray-300">Nombre Completo</label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-gray-800/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Tu nombre"
+                />
+              </div>
             )}
-            
+
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-gray-300">Correo Electrónico</label>
-              <input 
-                type="email" 
-                required 
-                value={email} 
-                onChange={e => setEmail(e.target.value)} 
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl bg-gray-800/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 placeholder="tucorreo@ejemplo.com"
               />
             </div>
-            
+
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-gray-300">Contraseña</label>
-              <input 
-                type="password" 
-                required 
-                value={password} 
-                onChange={e => setPassword(e.target.value)} 
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={e => setPassword(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl bg-gray-800/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 placeholder="••••••••"
               />
             </div>
 
-            <button 
-              type="submit" 
-              disabled={loading} 
+            <button
+              type="submit"
+              disabled={loading}
               className="mt-4 w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-blue-500/30 flex justify-center items-center disabled:opacity-70"
             >
               {loading ? (
@@ -116,8 +119,8 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
             {isLogin ? "¿No tienes una cuenta? " : "¿Ya tienes una cuenta? "}
-            <button 
-              onClick={() => { setIsLogin(!isLogin); setError(''); }} 
+            <button
+              onClick={() => { setIsLogin(!isLogin); setError(''); }}
               className="text-primary hover:underline font-medium"
               type="button"
             >

@@ -21,9 +21,18 @@ const findAll = async () => {
   return rows;
 };
 
+// Map frontend role names to DB role names
+const normalizeRole = (role) => {
+  if (!role) return 'customer';
+  const map = { 'cliente': 'customer', 'administrador': 'admin', 'customer': 'customer', 'admin': 'admin' };
+  return map[role.toLowerCase()] || role.toLowerCase();
+};
+
 const create = async (name, email, passwordHash, roleName = 'customer') => {
-  const { rows: roleRows } = await db.query('SELECT id FROM roles WHERE name = $1', [roleName]);
+  const normalized = normalizeRole(roleName);
+  const { rows: roleRows } = await db.query('SELECT id FROM roles WHERE name = $1', [normalized]);
   const roleId = roleRows.length > 0 ? roleRows[0].id : null;
+  if (!roleId) throw new Error(`Rol '${roleName}' no encontrado en la base de datos`);
 
   const { rows } = await db.query(
     'INSERT INTO users (name, email, password_hash, role_id) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role_id, created_at',
@@ -37,15 +46,17 @@ const create = async (name, email, passwordHash, roleName = 'customer') => {
 };
 
 const update = async (id, name, email, roleName) => {
-  const { rows: roleRows } = await db.query('SELECT id FROM roles WHERE name = $1', [roleName]);
+  const normalized = normalizeRole(roleName);
+  const { rows: roleRows } = await db.query('SELECT id FROM roles WHERE name = $1', [normalized]);
   const roleId = roleRows.length > 0 ? roleRows[0].id : null;
+  if (!roleId) throw new Error(`Rol '${roleName}' no encontrado en la base de datos`);
 
   const { rows } = await db.query(
-    'UPDATE users SET name = $1, email = $2, role_id = $3, status = $4 WHERE id = $5 RETURNING id, name, email, role_id, status',
+    'UPDATE users SET name = $1, email = $2, role_id = $3 WHERE id = $4 RETURNING id, name, email, role_id',
     [name, email, roleId, id]
   );
   
-  return rows[0] ? { ...rows[0], role: roleName } : null;
+  return rows[0] ? { ...rows[0], role: normalized } : null;
 };
 
 const remove = async (id) => {

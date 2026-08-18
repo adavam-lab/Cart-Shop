@@ -99,8 +99,8 @@ export default function AdminUsersPage() {
                   <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full dark:bg-blue-900/30 dark:text-blue-300">{user.role}</span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${user.status === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{user.status}</span>
-                </td>
+<span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Activo</span>
+</td>
                 <td className="px-6 py-4 whitespace-nowrap text-center">
                   <div className="flex justify-center gap-2">
                     <button onClick={() => handleEditClick(user)} className="p-1 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" title="Editar"><HiPencilAlt className="w-5 h-5" /></button>
