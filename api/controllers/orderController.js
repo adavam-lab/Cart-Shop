@@ -2,7 +2,6 @@ const Order = require('../models/orderModel');
 const db = require('../db');
 
 const createOrder = async (req, res) => {
-  const client = await db.pool.connect();
   try {
     const { items, discount } = req.body;
     const userId = req.user.userId;
@@ -11,47 +10,35 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ error: 'La orden debe contener al menos un artículo' });
     }
 
-    await client.query('BEGIN');
-
-    // Verify and deduct stock for each item inside a transaction
+    // Validate stock before creating (read-only check, no transaction yet)
     for (const item of items) {
-      const { rows } = await client.query(
-        'SELECT stock FROM products WHERE id = $1 FOR UPDATE',
+      const { rows } = await db.query(
+        'SELECT stock FROM products WHERE id = $1',
         [item.productId]
       );
 
       if (rows.length === 0) {
-        await client.query('ROLLBACK');
         return res.status(404).json({ error: `Producto con ID ${item.productId} no encontrado` });
       }
 
       const currentStock = rows[0].stock;
       if (currentStock < item.quantity) {
-        await client.query('ROLLBACK');
         return res.status(400).json({
           error: `Stock insuficiente para el producto ID ${item.productId}. Stock disponible: ${currentStock}`
         });
       }
-
-      await client.query(
-        'UPDATE products SET stock = stock - $1 WHERE id = $2',
-        [item.quantity, item.productId]
-      );
     }
 
     const totalAmount = items.reduce((total, item) => total + (item.price * item.quantity), 0);
     const finalAmount = Math.max(0, totalAmount - (discount || 0));
 
+    // The model handles the full transaction (insert order + items + stock deduction)
     const newOrder = await Order.createOrder(userId, finalAmount, discount || 0, items);
 
-    await client.query('COMMIT');
     res.status(201).json({ message: 'Orden creada con éxito', order: newOrder });
   } catch (error) {
-    await client.query('ROLLBACK');
-    console.error(error);
-    res.status(500).json({ error: 'Error interno del servidor' });
-  } finally {
-    client.release();
+    console.error('[createOrder]', error);
+    res.status(500).json({ error: 'Error interno del servidor', detail: error.message });
   }
 };
 

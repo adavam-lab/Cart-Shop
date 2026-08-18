@@ -33,8 +33,23 @@ const createOrder = async (userId, totalAmount, discount, items) => {
 };
 
 const findByUserId = async (userId) => {
-  const { rows } = await db.query('SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC', [userId]);
-  return rows;
+  const { rows: orders } = await db.query(
+    'SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC',
+    [userId]
+  );
+
+  for (const order of orders) {
+    const { rows: items } = await db.query(
+      `SELECT oi.id, oi.quantity, oi.unit_price AS price, p.name, p.image_url
+       FROM order_items oi
+       JOIN products p ON oi.product_id = p.id
+       WHERE oi.order_id = $1`,
+      [order.id]
+    );
+    order.items = items;
+  }
+
+  return orders;
 };
 
 const getOrderDetails = async (orderId) => {

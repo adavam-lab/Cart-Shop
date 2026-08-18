@@ -7,6 +7,7 @@ export interface CartItem {
   name: string;
   price: number;
   quantity: number;
+  stock: number;       // límite máximo comprable
   image_url?: string;
 }
 
@@ -14,6 +15,7 @@ interface CartContextType {
   items: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (productId: number) => void;
+  updateQuantity: (productId: number, quantity: number) => void;
   clearCart: () => void;
   total: number;
 }
@@ -40,17 +42,28 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const addToCart = (newItem: CartItem) => {
     setItems((prevItems) => {
-      const existingItemIndex = prevItems.findIndex(item => item.productId === newItem.productId);
-      if (existingItemIndex >= 0) {
-        // Increment quantity
-        const updatedItems = [...prevItems];
-        updatedItems[existingItemIndex].quantity += newItem.quantity;
-        return updatedItems;
-      } else {
-        // Add new item
-        return [...prevItems, newItem];
+      const existingIndex = prevItems.findIndex(i => i.productId === newItem.productId);
+      if (existingIndex >= 0) {
+        const updated = [...prevItems];
+        const current = updated[existingIndex];
+        // No superar el stock disponible
+        const newQty = Math.min(current.quantity + newItem.quantity, current.stock);
+        updated[existingIndex] = { ...current, quantity: newQty };
+        return updated;
       }
+      return [...prevItems, newItem];
     });
+  };
+
+  const updateQuantity = (productId: number, quantity: number) => {
+    setItems((prevItems) =>
+      prevItems.map(item => {
+        if (item.productId !== productId) return item;
+        // Clamp: mínimo 1, máximo stock
+        const clamped = Math.min(Math.max(1, quantity), item.stock);
+        return { ...item, quantity: clamped };
+      })
+    );
   };
 
   const removeFromCart = (productId: number) => {
@@ -62,7 +75,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
-    <CartContext.Provider value={{ items, addToCart, removeFromCart, clearCart, total }}>
+    <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, total }}>
       {children}
     </CartContext.Provider>
   );

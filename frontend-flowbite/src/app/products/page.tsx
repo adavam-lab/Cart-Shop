@@ -93,6 +93,7 @@ export default function ProductsPage() {
                     name: product.name,
                     price: parseFloat(product.price),
                     quantity: 1,
+                    stock: product.stock,
                     image_url: product.image_url
                   })}
                 >
