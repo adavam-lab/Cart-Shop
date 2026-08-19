@@ -21,8 +21,7 @@ export default function AppNavbar() {
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
             <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition">
-              <img src="/profermaco-white.avif" alt="Profermaco Logo" className="h-10 w-auto object-contain" />
-              <span className="font-bold text-xl text-white tracking-wider">ADAVAM</span>
+              <img src="/logo.png" alt="Profermaco Logo" className="h-10 w-auto object-contain" />
             </Link>
           </div>
 

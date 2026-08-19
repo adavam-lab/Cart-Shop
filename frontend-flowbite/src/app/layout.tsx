@@ -19,6 +19,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Flowbite Cliente",
   description: "Next.js App with Flowbite React",
+  icons: { icon: "/logo.ico" },
 };
 
 export default function RootLayout({

@@ -17,7 +17,7 @@ export function NavbarComponent() {
   return (
     <Navbar fluid rounded className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
       <NavbarBrand as={Link} href="/">
-        <img src="/profermaco-white-logo.avif" alt="Profermaco Logo" className="h-10 object-contain sm:h-12" />
+        <img src="/logo.png" alt="Profermaco Logo" className="h-10 object-contain sm:h-12" />
       </NavbarBrand>
       <div className="flex md:order-2 gap-2 items-center">
         <Link href="/cart" className="relative mr-4 text-gray-700 dark:text-gray-300 hover:text-blue-600">

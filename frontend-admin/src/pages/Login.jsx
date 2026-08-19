@@ -35,7 +35,7 @@ export default function Login({ onLogin }) {
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-8 border border-gray-700">
         <div className="flex flex-col items-center mb-8">
-          <img src="/profermaco.png" alt="Logo" className="h-16 w-auto object-contain mb-4" />
+          <img src="/logo.png" alt="Logo" className="h-16 w-auto object-contain mb-4" />
           <h1 className="text-2xl font-bold text-white">Panel Administrador</h1>
           <p className="text-gray-400 text-sm mt-1">Ingresa tus credenciales de admin</p>
         </div>

@@ -10,10 +10,10 @@ export default function Home() {
       <main className="container mx-auto p-4 md:p-8 flex flex-col items-center justify-center min-h-[calc(100vh-150px)]">
         <div className="flex flex-col items-center justify-center space-y-8 text-center max-w-3xl">
           <div className="flex justify-center mb-6">
-            <img src="/profermaco-white-logo.avif" alt="Profermaco Logo" className="h-32 w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300" />
+            <img src="/logo.png" alt="Profermaco Logo" className="h-32 w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300" />
           </div>
           <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white leading-tight">
-            Bienvenido a Profermaco
+            Bienvenido a ADAVAM STORE
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400">
             Descubre nuestra colección exclusiva de productos premium.

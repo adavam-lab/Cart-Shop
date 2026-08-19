@@ -10,6 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Prueba Profermarco",
   description: "Prueba de Profermarco",
+  icons: { icon: "/logo.ico" },
 };
 
 export default function RootLayout({
