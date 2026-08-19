@@ -29,12 +29,12 @@ export default function AdminLayout({ user, onLogout }) {
         transition-transform duration-300 md:translate-x-0 flex flex-col
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        {/* Logo en sidebar (ahora llega hasta arriba) */}
-        <div className="flex items-center justify-between px-4 h-16 border-b border-gray-200 dark:border-gray-700 shrink-0">
-          <Link to="/" className="flex items-center gap-2 w-full" onClick={() => setIsOpen(false)}>
+        {/* Logo en sidebar (ahora llega hasta arriba y está centrado) */}
+        <div className="flex items-center justify-center h-16 border-b border-gray-200 dark:border-gray-700 shrink-0 relative">
+          <Link to="/" className="flex items-center justify-center w-full h-full" onClick={() => setIsOpen(false)}>
             <img src="/logo.png" alt="Logo" className="h-8 w-auto object-contain" />
           </Link>
-          <button onClick={() => setIsOpen(false)} className="md:hidden p-1 text-gray-500 hover:bg-gray-100 rounded-lg shrink-0">
+          <button onClick={() => setIsOpen(false)} className="md:hidden absolute right-2 p-1 text-gray-500 hover:bg-gray-100 rounded-lg">
             <X size={20} />
           </button>
         </div>
@@ -64,16 +64,15 @@ export default function AdminLayout({ user, onLogout }) {
         </div>
       </aside>
 
-      {/* Contenido principal */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      {/* Contenido principal (deja espacio para el sidebar en desktop) */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden md:ml-64">
         {/* Navbar */}
         <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-30 sticky top-0 shrink-0">
-          <div className="flex items-center justify-between h-16 px-4">
+          <div className="flex items-center justify-between h-16 px-4 md:px-8">
             <div className="flex items-center gap-3">
               <button onClick={() => setIsOpen(true)} className="md:hidden p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                 <Menu size={20} />
               </button>
-              {/* Se removió el logo de aquí porque ahora solo está en el sidebar */}
             </div>
 
             <div className="relative">
@@ -110,9 +109,7 @@ export default function AdminLayout({ user, onLogout }) {
 
         {/* Main */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
-          <div className="max-w-7xl mx-auto">
-            <Outlet />
-          </div>
+          <Outlet />
         </main>
       </div>
     </div>

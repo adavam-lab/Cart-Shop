@@ -22,7 +22,7 @@ export const fetchWithAuth = async (endpoint: string, options: RequestInit = {})
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => null);
-    throw new Error(errorData?.error || 'Something went wrong');
+    throw new Error(errorData?.detail || errorData?.error || 'Something went wrong');
   }
 
   return response.json();

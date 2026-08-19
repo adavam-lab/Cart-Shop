@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const db = require('../db');
 
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized: No token provided' });
@@ -11,6 +12,13 @@ const authenticate = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Validar que el usuario aún existe en la base de datos
+    const { rows } = await db.query('SELECT id FROM users WHERE id = $1', [decoded.userId]);
+    if (rows.length === 0) {
+      return res.status(401).json({ error: 'Tu sesión ha expirado o el usuario ya no existe. Por favor, inicia sesión nuevamente.' });
+    }
+
     req.user = decoded; // { userId, role }
     next();
   } catch (error) {
