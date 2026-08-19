@@ -7,7 +7,7 @@ Welcome to the ADAVAM project! This repository contains a full-stack e-commerce 
 <!-- Contenedor con scroll horizontal garantizado (Tabla) -->
 <table>
   <tr>
-    <td><img src="img/Screenshot%202026-08-18%20at%203.43.03%E2%80%AFPM.png" width="450" /></td>
+    <td><img src="img/Screenshot%202026-08-18%20at%203.43.03%E2%80%AFPM.png" width="750" /></td>
     <td><img src="img/Screenshot%202026-08-18%20at%203.45.40%E2%80%AFPM.png" width="450" /></td>
     <td><img src="img/Screenshot%202026-08-18%20at%203.46.28%E2%80%AFPM.png" width="450" /></td>
     <td><img src="img/Screenshot%202026-08-18%20at%203.48.26%E2%80%AFPM.png" width="450" /></td>
